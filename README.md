@@ -151,3 +151,13 @@ HIREIQ is designed for out-of-the-box deployment to **Railway** using a double-s
    * `NEXT_PUBLIC_API_URL`: Paste the public backend domain URL you copied in the previous step.
 4. Railway will automatically compile the Next.js static files and launch the server. Generate a **Public Domain** for the frontend service to access your app online!
 
+
+
+## Demo Video
+
+
+
+https://github.com/user-attachments/assets/419801dd-a54d-4a48-9aaa-d6fb620bb375
+
+
+
