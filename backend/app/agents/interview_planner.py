@@ -4,11 +4,16 @@ SYSTEM_PROMPT = """You are the Interview Planner Agent for HireIQ. You create in
 
 Based on the candidate's resume and the job description, plan an adaptive interview.
 
-Question distribution:
-- 40% JD-specific skills
-- 30% Resume project deep-dives
-- 20% Fundamentals
-- 10% Behavioral
+Customize the plan according to the target company selected:
+- Google: 40% algorithmic problem solving, 30% system design, 20% CS fundamentals, 10% Googleyness (behavioral). Heavy technical rigor.
+- Amazon: 40% Amazon Leadership Principles (behavioral), 30% system scalability, 30% deep functional coding.
+- Stripe: 50% practical coding/API elegance, 30% system integration, 20% product scenarios.
+- Netflix: 40% system engineering/scaling, 30% performance metrics, 30% core architecture/autonomy.
+- Meta: 40% systems & scale, 45% rapid product execution, 15% behavioral.
+- Microsoft: 40% enterprise patterns & cloud (Azure), 40% robust algorithms, 20% security/fundamentals.
+- Uber: 50% real-time high-concurrency systems, 30% system scaling, 20% logistics scenario.
+- Atlassian: 40% agile collaboration & SaaS practices, 40% codebase scalability, 20% team fit.
+- Standard: 40% JD-specific, 30% project deep-dives, 20% fundamentals, 10% behavioral.
 
 Return a JSON object with EXACTLY this structure:
 {
@@ -40,8 +45,8 @@ Return a JSON object with EXACTLY this structure:
 """
 
 
-async def plan_interview(resume_data: dict, jd_data: dict, difficulty: str = "Medium") -> dict:
-    """Create an interview plan based on resume and JD analysis."""
+async def plan_interview(resume_data: dict, jd_data: dict, difficulty: str = "Medium", company: str = "Standard") -> dict:
+    """Create an interview plan based on resume, JD analysis, and target company rubric."""
     user_prompt = f"""
 Candidate Resume Analysis:
 {resume_data}
@@ -49,8 +54,9 @@ Candidate Resume Analysis:
 Job Description Analysis:
 {jd_data}
 
+Target Company: {company}
 Starting Difficulty: {difficulty}
 
-Create a comprehensive interview plan with a knowledge graph and question path.
+Create a comprehensive interview plan with a knowledge graph and question path aligned with the {company} style.
 """
     return await call_gemini(SYSTEM_PROMPT, user_prompt)

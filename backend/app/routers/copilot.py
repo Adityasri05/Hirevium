@@ -30,6 +30,8 @@ async def copilot_chat(
     )
     resume = resume_result.scalar_one_or_none()
 
+    latest_breakdown = recent_evals[0].detailed_breakdown if (recent_evals and recent_evals[0].detailed_breakdown) else {}
+
     context = {
         "name": user.name,
         "target_role": user.target_role,
@@ -45,7 +47,12 @@ async def copilot_chat(
             }
             for e in recent_evals
         ],
-        "weaknesses": recent_evals[0].detailed_breakdown.get("weaknesses", []) if recent_evals and recent_evals[0].detailed_breakdown else [],
+        "predictions": latest_breakdown.get("predictions", {}),
+        "benchmarks": latest_breakdown.get("benchmarks", {}),
+        "risks": latest_breakdown.get("risks", []),
+        "war_room": latest_breakdown.get("war_room", {}),
+        "company_context": latest_breakdown.get("company_context", {}),
+        "weaknesses": latest_breakdown.get("hiring_verdict", {}).get("weaknesses", []) if "hiring_verdict" in latest_breakdown else []
     }
 
     result = await chat(req.message, context)

@@ -13,6 +13,7 @@ class Interview(Base):
     jd_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("job_descriptions.id"), nullable=True)
     resume_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("resumes.id"), nullable=True)
     interview_type: Mapped[str] = mapped_column(String(50), default="technical")  # technical | behavioral | system_design | mixed
+    company: Mapped[str | None] = mapped_column(String(50), nullable=True, default="Standard")
     duration: Mapped[int | None] = mapped_column(Integer, nullable=True)  # in seconds
     difficulty: Mapped[str] = mapped_column(String(20), default="Medium")  # Easy | Medium | Hard | Expert
     mode: Mapped[str] = mapped_column(String(20), default="text")  # text | voice

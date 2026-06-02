@@ -28,6 +28,7 @@ async def start_new_interview(
         resume_id=req.resume_id,
         interview_type=req.interview_type,
         difficulty=req.difficulty,
+        company=req.company,
     )
     db.add(interview)
     await db.commit()

@@ -87,12 +87,14 @@ class InterviewStartRequest(BaseModel):
     resume_id: Optional[str] = None
     interview_type: str = "technical"
     difficulty: str = "Medium"
+    company: Optional[str] = "Standard"
 
 
 class InterviewResponse(BaseModel):
     id: str
     user_id: str
     interview_type: str
+    company: Optional[str] = "Standard"
     difficulty: str
     status: str
     knowledge_graph: Optional[dict] = None
@@ -147,6 +149,12 @@ class EvaluationResponse(BaseModel):
     hire_probability: float
     recommendation: Optional[str] = None
     detailed_breakdown: Optional[dict] = None
+    company_context: Optional[dict] = None
+    war_room: Optional[dict] = None
+    predictions: Optional[dict] = None
+    risks: Optional[dict] = None
+    benchmarks: Optional[dict] = None
+    learning_velocity: Optional[dict] = None
 
     model_config = {"from_attributes": True}
 
@@ -187,6 +195,10 @@ class DashboardResponse(BaseModel):
     recent_interviews: list
     skill_data: list
     trend_data: list
+    predictions: Optional[dict] = None
+    risks: Optional[dict] = None
+    benchmarks: Optional[dict] = None
+    learning_velocity: Optional[dict] = None
 
 
 # ── Gamification ──────────────────────────────────

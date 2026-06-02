@@ -97,6 +97,10 @@ async def get_dashboard(
         recent_interviews=recent_interviews,
         skill_data=skill_data,
         trend_data=trend_data,
+        predictions=latest_eval.detailed_breakdown.get("predictions") if latest_eval and latest_eval.detailed_breakdown else None,
+        risks=latest_eval.detailed_breakdown.get("risks") if latest_eval and latest_eval.detailed_breakdown else None,
+        benchmarks=latest_eval.detailed_breakdown.get("benchmarks") if latest_eval and latest_eval.detailed_breakdown else None,
+        learning_velocity=latest_eval.detailed_breakdown.get("learning_velocity") if latest_eval and latest_eval.detailed_breakdown else None,
     )
 
 
