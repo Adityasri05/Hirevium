@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useRef } from "react";
@@ -75,6 +75,7 @@ export default function Onboarding() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/resumes/upload`, {
         method: "POST",
+        headers: getAuthHeaders(null),
         body: formData,
       });
 
@@ -105,8 +106,9 @@ export default function Onboarding() {
         setIsUploading(false);
         nextStep();
       }, 1000);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during resume parsing.");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred during resume parsing.";
+      setError(errorMsg);
       setUploadedFileName(null);
       setIsUploading(false);
     }
@@ -139,9 +141,7 @@ export default function Onboarding() {
       // Save onboarding profiles to backend user model
       const response = await fetch(`${API_BASE_URL}/api/users/me`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders("application/json"),
         body: JSON.stringify({
           target_role: role,
           experience_level: experience,
@@ -154,8 +154,9 @@ export default function Onboarding() {
       }
 
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "An error occurred while saving setup.");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An error occurred while saving setup.";
+      setError(errorMsg);
     }
   };
 
@@ -278,7 +279,7 @@ export default function Onboarding() {
             >
               <div className="text-center space-y-2">
                 <h2 className="text-3xl font-bold">Upload Resume</h2>
-                <p className="text-gray-400">We'll analyze it to verify your skills.</p>
+                <p className="text-gray-400">We&apos;ll analyze it to verify your skills.</p>
               </div>
 
               <div className="mt-4 flex-1">

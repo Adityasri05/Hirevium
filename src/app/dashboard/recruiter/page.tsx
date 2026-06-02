@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect } from "react";
@@ -26,18 +26,28 @@ export default function RecruiterWorkspace() {
     async function loadCandidates() {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/recruiter/candidates`);
+        const response = await fetch(`${API_BASE_URL}/api/recruiter/candidates`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) throw new Error("Failed to load candidates");
         
         const data = await response.json();
         // Map API response to local structure
-        const mapped = data.map((cand: any, idx: number) => ({
+        interface CandidateData {
+          user_id?: string;
+          name?: string;
+          target_role?: string;
+          hireiq_score?: number;
+          recommendation?: string;
+          skill_verification_score?: number;
+        }
+        const mapped = (data as CandidateData[]).map((cand, idx) => ({
           id: cand.user_id || `c-${idx}`,
           name: cand.name || "Candidate",
           role: cand.target_role || "Software Engineer",
-          score: Math.round(cand.hireiq_score) || 75,
+          score: cand.hireiq_score !== undefined ? Math.round(cand.hireiq_score) : 75,
           status: cand.recommendation || "Borderline",
-          verified: Math.round(cand.skill_verification_score) || 70,
+          verified: cand.skill_verification_score !== undefined ? Math.round(cand.skill_verification_score) : 70,
           applied: "Just now"
         }));
         setCandidates(mapped);

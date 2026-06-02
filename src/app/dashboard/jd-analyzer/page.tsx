@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect } from "react";
@@ -47,7 +47,9 @@ export default function JDAnalyzer() {
       // 1. Fetch latest resume skills
       let candidateSkills = { "Python": 90, "React": 85, "TypeScript": 80, "FastAPI": 85 };
       try {
-        const resumeRes = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const resumeRes = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (resumeRes.ok) {
           const resJson = await resumeRes.json();
           if (resJson.skill_confidence) {
@@ -61,12 +63,10 @@ export default function JDAnalyzer() {
       // 2. Perform Gap Analysis via backend agent
       const response = await fetch(`${API_BASE_URL}/api/jd/analyze`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders("application/json"),
         body: JSON.stringify({
           content: jdContent,
-          title: "Target Position"
+          title: "Job Description"
         })
       });
 
@@ -77,7 +77,9 @@ export default function JDAnalyzer() {
       const jdData = await response.json();
       
       // Perform skill gap comparison on backend
-      const gapResponse = await fetch(`${API_BASE_URL}/api/jd/${jdData.id}/gap-analysis`);
+      const gapResponse = await fetch(`${API_BASE_URL}/api/jd/${jdData.id}/gap-analysis`, {
+        headers: getAuthHeaders(null)
+      });
       if (!gapResponse.ok) {
         throw new Error("Failed to compile skill gap analysis.");
       }
@@ -99,8 +101,9 @@ export default function JDAnalyzer() {
       });
 
       setShowInput(false);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during gap analysis.");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred during gap analysis.";
+      setError(errorMsg);
     } finally {
       setIsAnalyzing(false);
     }

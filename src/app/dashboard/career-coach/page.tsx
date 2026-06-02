@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect } from "react";
@@ -29,7 +29,18 @@ export default function CareerCoach() {
   const [activeHorizon, setActiveHorizon] = useState<string>("7");
   const [roadmap, setRoadmap] = useState<CareerRoadmap | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [targetGoal, setTargetGoal] = useState<string>("Senior Frontend Engineer");
+  const [targetGoal, setTargetGoal] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("hireiq_user");
+      if (storedUser) {
+        try {
+          const userObj = JSON.parse(storedUser);
+          return userObj.career_goals || userObj.target_role || "Senior Frontend Engineer";
+        } catch {}
+      }
+    }
+    return "Senior Frontend Engineer";
+  });
 
   const HORIZONS = [
     { id: "7", label: "7-Day Sprint" },
@@ -38,24 +49,14 @@ export default function CareerCoach() {
     { id: "90", label: "90-Day Goal" }
   ];
 
-  useEffect(() => {
-    // Fetch target goal from localStorage user details
-    const storedUser = localStorage.getItem("hireiq_user");
-    if (storedUser) {
-      try {
-        const userObj = JSON.parse(storedUser);
-        if (userObj.career_goals || userObj.target_role) {
-          setTargetGoal(userObj.career_goals || userObj.target_role);
-        }
-      } catch {}
-    }
-  }, []);
 
   useEffect(() => {
     async function loadRoadmap() {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/career-coach/roadmap?horizon=${activeHorizon}`);
+        const response = await fetch(`${API_BASE_URL}/api/career-coach/roadmap?horizon=${activeHorizon}`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) {
           throw new Error("Failed to load learning roadmap.");
         }

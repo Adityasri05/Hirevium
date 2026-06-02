@@ -28,24 +28,26 @@ const PIPELINE_STEPS = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Check if token exists on load
-    const token = localStorage.getItem("hireiq_token");
-    const storedUser = localStorage.getItem("hireiq_user");
-    
-    setIsAuthenticated(!!token);
-    if (storedUser) {
-      try {
-        const userObj = JSON.parse(storedUser);
-        if (userObj.name) {
-          setUserName(userObj.name.split(" ")[0]);
-        }
-      } catch {}
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return !!localStorage.getItem("hireiq_token");
     }
-  }, []);
+    return false;
+  });
+  const [userName, setUserName] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("hireiq_user");
+      if (storedUser) {
+        try {
+          const userObj = JSON.parse(storedUser);
+          if (userObj.name) {
+            return userObj.name.split(" ")[0];
+          }
+        } catch {}
+      }
+    }
+    return null;
+  });
 
   const handleStart = () => {
     if (isAuthenticated) {

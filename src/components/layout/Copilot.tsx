@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Sparkles, ChevronRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -47,9 +47,7 @@ export function Copilot() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/copilot/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders("application/json"),
         body: JSON.stringify({
           message: messageText,
         }),

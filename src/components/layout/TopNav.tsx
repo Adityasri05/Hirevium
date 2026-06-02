@@ -2,26 +2,29 @@
 
 import { Bell, Search, User } from "lucide-react";
 import { useState, useEffect } from "react";
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 export function TopNav() {
-  const [candidateName, setCandidateName] = useState<string>("Alex D.");
+  const [candidateName, setCandidateName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("hireiq_user");
+      if (storedUser) {
+        try {
+          const userObj = JSON.parse(storedUser);
+          if (userObj.name) return userObj.name;
+        } catch {}
+      }
+    }
+    return "Alex D.";
+  });
 
   useEffect(() => {
-    // Dynamic user name sync
-    const storedUser = localStorage.getItem("hireiq_user");
-    if (storedUser) {
-      try {
-        const userObj = JSON.parse(storedUser);
-        if (userObj.name) {
-          setCandidateName(userObj.name);
-        }
-      } catch {}
-    }
 
     async function loadLatestResume() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) return;
         
         const data = await response.json();

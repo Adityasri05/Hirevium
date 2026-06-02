@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect, useRef } from "react";
@@ -99,7 +99,9 @@ export default function LiveInterview() {
       // 1. Fetch latest resume to inject as context
       let resumeId = null;
       try {
-        const resumeRes = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const resumeRes = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (resumeRes.ok) {
           const resumeData = await resumeRes.json();
           resumeId = resumeData.id;
@@ -111,9 +113,7 @@ export default function LiveInterview() {
       // 2. Start the AI Adaptive Interview
       const response = await fetch(`${API_BASE_URL}/api/interviews/start`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders("application/json"),
         body: JSON.stringify({
           resume_id: resumeId,
           interview_type: "technical",
@@ -143,9 +143,7 @@ export default function LiveInterview() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/interviews/${interviewId}/answer`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders("application/json"),
         body: JSON.stringify({
           answer_text: answer,
           response_time_seconds: 30.0 // average benchmark
@@ -197,7 +195,8 @@ export default function LiveInterview() {
     if (!interviewId) return;
     try {
       await fetch(`${API_BASE_URL}/api/interviews/${interviewId}/end`, {
-        method: "POST"
+        method: "POST",
+        headers: getAuthHeaders("application/json")
       });
       setInterviewStatus("completed");
       setShowCompleted(true);
@@ -257,7 +256,7 @@ export default function LiveInterview() {
           <div className="text-center max-w-md space-y-2">
             <h2 className="text-2xl font-bold text-white">Interactive Adaptive Interview</h2>
             <p className="text-sm text-gray-400">
-              Benchmark your capabilities using our AI Adaptive Interview Engine. We'll customize questions in real time based on your target role and resume profile.
+              Benchmark your capabilities using our AI Adaptive Interview Engine. We&apos;ll customize questions in real time based on your target role and resume profile.
             </p>
           </div>
           <button
@@ -452,7 +451,7 @@ export default function LiveInterview() {
                 <p className="text-sm text-gray-300 font-medium mb-1">Reason:</p>
                 <p className="text-sm text-[#EF4444] mb-3">{terminationReason}</p>
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  The HireIQ early termination guard triggered automatically due to consecutive answer scores falling below threshold metrics. Let's build a customized learning plan to strengthen these areas.
+                  The HireIQ early termination guard triggered automatically due to consecutive answer scores falling below threshold metrics. Let&apos;s build a customized learning plan to strengthen these areas.
                 </p>
               </div>
 

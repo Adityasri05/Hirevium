@@ -66,7 +66,7 @@ export default function Signup() {
       localStorage.setItem("hireiq_user", JSON.stringify(data.user));
 
       router.push("/onboarding");
-    } catch (err: any) {
+    } catch (err) {
       console.warn("API Signup failed, using hackathon fallback", err);
       
       // Mock success for beautiful robust onboarding demo UX

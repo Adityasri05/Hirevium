@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 import {
   LayoutDashboard,
   Video,
@@ -32,7 +32,9 @@ export function Sidebar() {
   useEffect(() => {
     async function loadLatestResume() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) return;
         const data = await response.json();
         

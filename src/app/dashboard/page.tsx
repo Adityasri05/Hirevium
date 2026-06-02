@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect } from "react";
@@ -43,7 +43,7 @@ interface TrendPoint {
 interface MetricSummary {
   title: string;
   value: string;
-  icon: any;
+  icon: React.ElementType;
   color: string;
 }
 
@@ -92,7 +92,9 @@ export default function Dashboard() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) {
           setIsLoading(false);
           return;
@@ -158,7 +160,7 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Welcome back, {userName}</h1>
-          <p className="text-gray-400">Here's your hiring readiness overview for today.</p>
+          <p className="text-gray-400">Here&apos;s your hiring readiness overview for today.</p>
         </div>
         <div className="flex items-center space-x-3">
           <button 

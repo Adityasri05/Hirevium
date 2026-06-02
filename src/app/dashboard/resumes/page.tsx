@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 import { 
   UploadCloud, 
   ShieldCheck, 
@@ -61,7 +61,9 @@ export default function ResumeIntelligence() {
   useEffect(() => {
     async function loadLatestResume() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`);
+        const response = await fetch(`${API_BASE_URL}/api/resumes/latest`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) return; // Silent return if none found yet
         
         const resData = await response.json();
@@ -125,6 +127,7 @@ export default function ResumeIntelligence() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/resumes/upload`, {
         method: "POST",
+        headers: getAuthHeaders(null),
         body: formData,
       });
 
@@ -170,8 +173,9 @@ export default function ResumeIntelligence() {
         summary: parsed.summary || "No professional summary provided.",
         skills: skillsList.length > 0 ? skillsList : DEFAULT_RESUME.skills
       });
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

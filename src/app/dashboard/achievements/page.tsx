@@ -1,6 +1,6 @@
 "use client";
 
-import { API_BASE_URL } from "@/utils/api";
+import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 
 
 import { useState, useEffect } from "react";
@@ -85,7 +85,9 @@ export default function Achievements() {
     async function loadAchievements() {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/gamification/profile`);
+        const response = await fetch(`${API_BASE_URL}/api/gamification/profile`, {
+          headers: getAuthHeaders(null)
+        });
         if (!response.ok) {
           throw new Error("Failed to load gamification profile.");
         }

@@ -47,7 +47,7 @@ export default function Login() {
       localStorage.setItem("hireiq_user", JSON.stringify(data.user));
 
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       // In hackathon mode, if backend credentials fail or server isn't hit, let them sign in automatically with fallback user
       console.warn("API Login failed, using hackathon fallback", err);
       
@@ -146,7 +146,7 @@ export default function Login() {
         </form>
 
         <div className="text-center text-sm text-gray-400 pt-2 border-t border-[rgba(255,255,255,0.05)]">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-[#A855F7] hover:underline font-semibold">
             Sign up
           </Link>
