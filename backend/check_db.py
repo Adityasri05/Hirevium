@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.resume import Resume
 
 async def check():
+    await init_db()
     async with AsyncSessionLocal() as db:
         # Check users
         user_result = await db.execute(select(User))

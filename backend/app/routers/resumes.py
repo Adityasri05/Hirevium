@@ -84,7 +84,29 @@ async def get_latest_resume(
     )
     resume = result.scalar_one_or_none()
     if not resume:
-        raise HTTPException(status_code=404, detail="No resume found. Upload one first.")
+        if user.id == "alex-dev":
+            # Auto-seed a high-fidelity mock resume for the demo candidate so the website fetches it flawlessly!
+            from app.agents.base_agent import _generate_mock_response
+            mock_data = _generate_mock_response("resume intelligence", "Alex Developer")
+            resume = Resume(
+                user_id=user.id,
+                file_path="mock_resume.pdf",
+                raw_text="Mock resume text content for Alex Developer.",
+                parsed_content=mock_data,
+                skills=mock_data.get("skills", []),
+                projects=mock_data.get("projects", []),
+                education=mock_data.get("education", []),
+                certifications=mock_data.get("certifications", []),
+                experience=mock_data.get("experience", []),
+                resume_score=mock_data.get("resume_score"),
+                skill_confidence=mock_data.get("skill_confidence", {}),
+                project_complexity=mock_data.get("project_complexity", {}),
+            )
+            db.add(resume)
+            await db.commit()
+            await db.refresh(resume)
+        else:
+            raise HTTPException(status_code=404, detail="No resume found. Upload one first.")
     return ResumeResponse.model_validate(resume)
 
 
