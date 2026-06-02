@@ -76,7 +76,7 @@ export function Copilot() {
         ...prev,
         {
           role: "assistant" as const,
-          content: "Sorry, I ran into an error connecting to the HireIQ Copilot Engine. Make sure the backend server is running at http://localhost:8000!",
+          content: `Sorry, I ran into an error connecting to the HireIQ Copilot Engine. Make sure the backend server is running at ${API_BASE_URL}!`,
         },
       ]);
     } finally {
