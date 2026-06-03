@@ -80,6 +80,12 @@ export default function Onboarding() {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("hireiq_token");
+          localStorage.removeItem("hireiq_user");
+          router.push("/login");
+          return;
+        }
         const errDetail = await response.json();
         throw new Error(errDetail.detail || "Failed to upload and parse resume.");
       }
@@ -156,6 +162,12 @@ export default function Onboarding() {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("hireiq_token");
+          localStorage.removeItem("hireiq_user");
+          router.push("/login");
+          return;
+        }
         throw new Error("Failed to save user target profiles.");
       }
 
