@@ -1,21 +1,34 @@
-import { createClient } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
-import Link from 'next/link'
-import { Sparkles, CheckCircle, ListTodo } from 'lucide-react'
+"use client";
 
-export default async function Page() {
-  const cookieStore = await cookies()
-  const supabase = createClient(cookieStore)
+import { createClient } from '@/utils/supabase/client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Sparkles, CheckCircle, ListTodo } from 'lucide-react';
 
-  let todos: any[] | null = null;
-  let errorMsg = null;
-  try {
-    const { data, error } = await supabase.from('todos').select()
-    todos = data
-    if (error) errorMsg = error.message
-  } catch (e: any) {
-    errorMsg = e.message
-  }
+export default function Page() {
+  const [todos, setTodos] = useState<any[] | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadTodos() {
+      setIsLoading(true);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.from('todos').select();
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setTodos(data);
+        }
+      } catch (e: any) {
+        setErrorMsg(e.message || "An unexpected error occurred.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadTodos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#09090B] text-white flex flex-col justify-between selection:bg-[#7C3AED] selection:text-white">
@@ -41,7 +54,7 @@ export default async function Page() {
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight">Supabase Integration Live</h1>
           <p className="text-sm text-gray-400">
-            Real-time server-side database response synchronized through Supabase SSR.
+            Real-time client-side database response synchronized through Supabase client.
           </p>
         </div>
 
@@ -53,7 +66,11 @@ export default async function Page() {
 
         <div className="glass p-6 rounded-2xl border border-[rgba(255,255,255,0.05)]">
           <h3 className="font-semibold text-sm mb-4 text-gray-300">Todos Checklist</h3>
-          {todos && todos.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8 text-xs text-gray-400 italic">
+              Loading todos...
+            </div>
+          ) : todos && todos.length > 0 ? (
             <ul className="space-y-3">
               {todos.map((todo) => (
                 <li 
@@ -73,5 +90,5 @@ export default async function Page() {
         </div>
       </main>
     </div>
-  )
+  );
 }

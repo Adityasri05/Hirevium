@@ -60,6 +60,13 @@ app.include_router(copilot.router)
 app.include_router(gamification.router)
 app.include_router(realtime.router)
 
+from fastapi.staticfiles import StaticFiles
+
+# Serve static frontend files from 'out' folder if it exists
+frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "out"))
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint."""

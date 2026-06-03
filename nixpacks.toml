@@ -1,0 +1,20 @@
+# Nixpacks configuration for single-port unified deployment on Railway
+[providers]
+providers = ["node", "python"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "python311"]
+
+[phases.install]
+cmds = [
+  "npm ci",
+  "pip install -r backend/requirements.txt"
+]
+
+[phases.build]
+cmds = [
+  "npm run build"
+]
+
+[start]
+cmd = "cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
