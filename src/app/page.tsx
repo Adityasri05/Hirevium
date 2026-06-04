@@ -16,6 +16,7 @@ import {
   Sparkles,
   LogOut
 } from "lucide-react";
+import AuthDrawer from "@/components/layout/AuthDrawer";
 
 const PIPELINE_STEPS = [
   { id: 1, title: "Resume Upload", icon: Upload },
@@ -28,9 +29,60 @@ const PIPELINE_STEPS = [
 
 export default function LandingPage() {
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [isAuthDrawerOpen, setIsAuthDrawerOpen] = useState(false);
+  const [authDrawerTab, setAuthDrawerTab] = useState<"signin" | "signup">("signin");
+
+  const checkAuthStatus = () => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("hireiq_token");
+      const userStr = localStorage.getItem("hireiq_user");
+      if (token && token !== "guest-token-12345") {
+        setIsLoggedIn(true);
+        if (userStr) {
+          try {
+            setUser(JSON.parse(userStr));
+          } catch {
+            setUser(null);
+          }
+        }
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    }
+  };
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("hireiq_token");
+    localStorage.removeItem("hireiq_user");
+    // Re-initialize guest credentials so pages don't break
+    localStorage.setItem("hireiq_token", "guest-token-12345");
+    localStorage.setItem("hireiq_user", JSON.stringify({
+      id: "guest-id",
+      name: "Alex D.",
+      email: "guest@hireiq.ai",
+      role: "candidate",
+      target_role: "Frontend Engineer",
+      experience_level: "Fresher",
+      career_goals: "Master frontend frameworks and build premium user interfaces."
+    }));
+    checkAuthStatus();
+    router.refresh();
+  };
+
+  const openAuthDrawer = (tab: "signin" | "signup") => {
+    setAuthDrawerTab(tab);
+    setIsAuthDrawerOpen(true);
+  };
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-white overflow-hidden selection:bg-[#7C3AED] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#09090B] text-white overflow-hidden selection:bg-[#7C3AED] selection:text-white flex flex-col justify-between relative">
       {/* Background Gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] opacity-20 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C3AED] blur-[120px] rounded-full"></div>
@@ -46,12 +98,48 @@ export default function LandingPage() {
         </Link>
 
         <nav className="flex items-center space-x-4">
-          <Link 
-            href="/dashboard"
-            className="px-5 py-2.5 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-[#6D28D9] hover:to-[#9333EA] rounded-lg text-sm text-white font-medium transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.3)]"
-          >
-            Go to Dashboard
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <div className="hidden md:flex items-center space-x-2 bg-white/5 border border-white/10 px-3.5 py-1.5 rounded-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs text-gray-300 font-medium">Logged in as {user?.name || "User"}</span>
+              </div>
+              <Link 
+                href="/dashboard"
+                className="px-5 py-2.5 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-[#6D28D9] hover:to-[#9333EA] rounded-lg text-sm text-white font-medium transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.3)]"
+              >
+                Go to Dashboard
+              </Link>
+              <button 
+                onClick={handleLogout}
+                className="p-2.5 bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 text-red-400 hover:text-red-300 rounded-lg text-sm transition-all cursor-pointer flex items-center justify-center"
+                title="Log Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => openAuthDrawer("signin")}
+                className="px-4 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors cursor-pointer"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => openAuthDrawer("signup")}
+                className="px-4 py-2.5 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-[#6D28D9] hover:to-[#9333EA] rounded-lg text-sm text-white font-semibold transition-all shadow-[0_0_15px_rgba(124,58,237,0.2)] hover:shadow-[0_0_20px_rgba(124,58,237,0.3)] cursor-pointer"
+              >
+                Sign Up
+              </button>
+              <Link 
+                href="/dashboard"
+                className="hidden sm:block px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white font-medium transition-all"
+              >
+                Explore as Guest
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -88,22 +176,34 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+            className="flex flex-col items-center justify-center space-y-4 pt-4"
           >
-            <button 
-              onClick={() => router.push("/dashboard")}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-[#6D28D9] hover:to-[#9333EA] text-white rounded-xl font-medium transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center space-x-2 group"
-            >
-              <span>Go to Dashboard</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-            
-            <button 
-              onClick={() => router.push("/onboarding")}
-              className="w-full sm:w-auto px-8 py-4 glass hover:bg-[rgba(255,255,255,0.05)] rounded-xl font-medium transition-all flex items-center justify-center space-x-2"
-            >
-              <span>Restart Setup / Upload Resume</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+              <button 
+                onClick={() => router.push("/dashboard")}
+                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] hover:from-[#6D28D9] hover:to-[#9333EA] text-white rounded-xl font-medium transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.5)] flex items-center justify-center space-x-2 group cursor-pointer"
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              
+              <button 
+                onClick={() => router.push("/onboarding")}
+                className="w-full sm:w-auto px-8 py-4 glass hover:bg-[rgba(255,255,255,0.05)] rounded-xl font-medium transition-all flex items-center justify-center space-x-2 cursor-pointer"
+              >
+                <span>Restart Setup / Upload Resume</span>
+              </button>
+            </div>
+
+            {!isLoggedIn && (
+              <p className="text-xs text-gray-400">
+                Running in Guest Mode.{" "}
+                <button onClick={() => openAuthDrawer("signin")} className="text-[#A855F7] hover:text-[#9333EA] hover:underline font-semibold cursor-pointer">Sign In</button>
+                {" "}or{" "}
+                <button onClick={() => openAuthDrawer("signup")} className="text-[#A855F7] hover:text-[#9333EA] hover:underline font-semibold cursor-pointer">Sign Up</button>
+                {" "}to save progress permanently.
+              </p>
+            )}
           </motion.div>
         </div>
 
@@ -159,6 +259,14 @@ export default function LandingPage() {
           </div>
         </motion.div>
       </main>
+
+      {/* Auth side drawer */}
+      <AuthDrawer 
+        isOpen={isAuthDrawerOpen} 
+        onClose={() => setIsAuthDrawerOpen(false)} 
+        initialTab={authDrawerTab}
+        onAuthSuccess={checkAuthStatus}
+      />
     </div>
   );
 }
