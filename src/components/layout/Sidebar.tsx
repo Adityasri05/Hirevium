@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
+import { auth } from "@/utils/firebase";
+import { signOut } from "firebase/auth";
 import {
   LayoutDashboard,
   Video,
@@ -12,7 +14,8 @@ import {
   GraduationCap,
   Users,
   Trophy,
-  RotateCcw
+  RotateCcw,
+  LogOut
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -53,6 +56,17 @@ export function Sidebar() {
     localStorage.removeItem("hireiq_token");
     localStorage.removeItem("hireiq_user");
     window.location.href = "/onboarding";
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn("Sign out: Firebase sign out failed", e);
+    }
+    localStorage.removeItem("hireiq_token");
+    localStorage.removeItem("hireiq_user");
+    window.location.href = "/login";
   };
 
   return (
@@ -100,6 +114,14 @@ export function Sidebar() {
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset Assessment</span>
+        </button>
+
+        <button 
+          onClick={handleSignOut}
+          className="flex items-center justify-center space-x-2 w-full py-2 bg-[rgba(239,68,68,0.08)] hover:bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.2)] rounded-lg text-xs text-[#EF4444] transition-colors font-medium"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>

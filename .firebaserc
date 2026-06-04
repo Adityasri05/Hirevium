@@ -1,7 +1,5 @@
 {
   "projects": {
-    "default": "hireiq-ie"
-  },
-  "targets": {},
-  "etags": {}
+    "default": "hireiq-c1d7a"
+  }
 }

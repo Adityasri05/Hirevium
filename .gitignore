@@ -56,3 +56,10 @@ backend/app/websocket/__pycache__/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase cache
+.firebase/
+firebase-debug.log*
+
+# agents skills
+.agents/
