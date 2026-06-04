@@ -15,6 +15,8 @@ import {
   AlertTriangle 
 } from "lucide-react";
 import { API_BASE_URL } from "@/utils/api";
+import { auth } from "@/utils/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 interface AuthDrawerProps {
   isOpen: boolean;
@@ -86,6 +88,65 @@ export default function AuthDrawer({
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [isOpen, onClose]);
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName || user.email?.split("@")[0] || "Google User",
+          photo_url: user.photoURL,
+        }),
+      });
+
+      if (!response.ok) {
+        const errDetail = await response.json();
+        throw new Error(errDetail.detail || "Failed to sign in with Google.");
+      }
+
+      const data = await response.json();
+      
+      localStorage.setItem("hireiq_token", data.access_token);
+      localStorage.setItem("hireiq_user", JSON.stringify(data.user));
+
+      setSuccessMessage("Logged in successfully! Redirecting...");
+      
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
+
+      setTimeout(() => {
+        setIsLoading(false);
+        onClose();
+        if (data.user && (!data.user.target_role || !data.user.experience_level)) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+      }, 1500);
+
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Google sign in failed. Please try again.";
+      if (errorMsg.includes("auth/popup-closed-by-user")) {
+        setIsLoading(false);
+        return;
+      }
+      setError(errorMsg);
+      setIsLoading(false);
+    }
+  };
+
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,6 +430,27 @@ export default function AuthDrawer({
                         </>
                       )}
                     </button>
+
+                    <div className="flex items-center space-x-3 my-4">
+                      <div className="h-[1px] bg-white/10 flex-1"></div>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Or continue with</span>
+                      <div className="h-[1px] bg-white/10 flex-1"></div>
+                    </div>
+
+                    <button
+                      onClick={handleGoogleSignIn}
+                      disabled={isLoading}
+                      type="button"
+                      className="w-full py-3.5 bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] text-white font-medium rounded-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                        <path
+                          fill="#EA4335"
+                          d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.29 1.845 15.538 1 12.24 1 5.926 1 12.24s4.926 11.24 11.24 11.24c6.59 0 11-4.627 11-11.196 0-.752-.08-1.326-.18-1.887H12.24z"
+                        />
+                      </svg>
+                      <span>Sign in with Google</span>
+                    </button>
                   </form>
                 ) : (
                   /* SIGN UP FORM */
@@ -450,6 +532,27 @@ export default function AuthDrawer({
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
+                    </button>
+
+                    <div className="flex items-center space-x-3 my-4">
+                      <div className="h-[1px] bg-white/10 flex-1"></div>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Or continue with</span>
+                      <div className="h-[1px] bg-white/10 flex-1"></div>
+                    </div>
+
+                    <button
+                      onClick={handleGoogleSignIn}
+                      disabled={isLoading}
+                      type="button"
+                      className="w-full py-3.5 bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] text-white font-medium rounded-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                        <path
+                          fill="#EA4335"
+                          d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.29 1.845 15.538 1 12.24 1 5.926 1 12.24s4.926 11.24 11.24 11.24c6.59 0 11-4.627 11-11.196 0-.752-.08-1.326-.18-1.887H12.24z"
+                        />
+                      </svg>
+                      <span>Sign up with Google</span>
                     </button>
                   </form>
                 )}
