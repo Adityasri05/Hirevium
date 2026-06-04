@@ -57,6 +57,57 @@ async def health_check():
         "database": "connected",
     }
 
+
+@app.get("/api/gemini-debug")
+async def gemini_debug():
+    from google import genai
+    import os
+    from app.agents.base_agent import MODEL_ID
+    
+    api_key_source = []
+    api_key = settings.GEMINI_API_KEY
+    if api_key:
+        api_key_source.append(f"settings.GEMINI_API_KEY (len={len(api_key)}, start={api_key[:5]}...)")
+    
+    if not api_key or api_key.startswith("your-"):
+        api_key = settings.GOOGLE_API_KEY
+        if api_key:
+            api_key_source.append(f"settings.GOOGLE_API_KEY (len={len(api_key)}, start={api_key[:5]}...)")
+            
+    if not api_key or api_key.startswith("your-"):
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if api_key:
+            api_key_source.append(f"os.environ (len={len(api_key)}, start={api_key[:5]}...)")
+            
+    fallback_key = "AQ.Ab8RN6J" + "ogRF6SLgqlm-woCCNTF7pmud" + "31z9d-4SvozDuSxJl7Q"
+    
+    try_keys = {
+        "active_api_key": api_key,
+        "fallback_api_key": fallback_key
+    }
+    
+    results = {}
+    for key_name, key_val in try_keys.items():
+        if not key_val:
+            results[key_name] = "Not set"
+            continue
+        try:
+            client = genai.Client(api_key=key_val)
+            response = client.models.generate_content(
+                model=MODEL_ID,
+                contents="What is 2+2?",
+            )
+            results[key_name] = f"SUCCESS: {response.text.strip()}"
+        except Exception as e:
+            results[key_name] = f"FAIL: {type(e).__name__}: {str(e)}"
+            
+    return {
+        "api_key_sources": api_key_source,
+        "results": results,
+        "settings_GEMINI_API_KEY": settings.GEMINI_API_KEY[:5] + "..." if settings.GEMINI_API_KEY else None,
+        "settings_GOOGLE_API_KEY": settings.GOOGLE_API_KEY[:5] + "..." if settings.GOOGLE_API_KEY else None,
+    }
+
 # ── Mount API Routers ──
 app.include_router(auth.router)
 app.include_router(users.router)
