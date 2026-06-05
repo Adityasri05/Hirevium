@@ -109,10 +109,16 @@ async def get_dashboard(
         pressure_score = latest_eval.pressure_score
         recommendation = latest_eval.recommendation or "N/A"
         
-        predictions = latest_eval.detailed_breakdown.get("predictions") if latest_eval.detailed_breakdown else None
-        risks = latest_eval.detailed_breakdown.get("risks") if latest_eval.detailed_breakdown else None
-        benchmarks = latest_eval.detailed_breakdown.get("benchmarks") if latest_eval.detailed_breakdown else None
-        learning_velocity = latest_eval.detailed_breakdown.get("learning_velocity") if latest_eval.detailed_breakdown else None
+        db_breakdown = latest_eval.detailed_breakdown or {}
+        if isinstance(db_breakdown, str):
+            try:
+                db_breakdown = json.loads(db_breakdown)
+            except Exception:
+                db_breakdown = {}
+        predictions = db_breakdown.get("predictions")
+        risks = db_breakdown.get("risks")
+        benchmarks = db_breakdown.get("benchmarks")
+        learning_velocity = db_breakdown.get("learning_velocity")
     elif resume:
         # Seed dashboard with initial resume evaluation score
         hireiq_score = resume.resume_score or 75.0

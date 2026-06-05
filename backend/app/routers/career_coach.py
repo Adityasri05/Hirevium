@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import json
 from app.database import get_db
 from app.models.user import User
 from app.models.evaluation import Evaluation
@@ -38,8 +39,15 @@ async def get_roadmap(
             "hireiq_score": latest_eval.hireiq_score,
             "recommendation": latest_eval.recommendation,
         }
-        if latest_eval.detailed_breakdown:
-            skill_gaps = latest_eval.detailed_breakdown.get("weaknesses", [])
+        db_breakdown = latest_eval.detailed_breakdown
+        if db_breakdown:
+            if isinstance(db_breakdown, str):
+                try:
+                    db_breakdown = json.loads(db_breakdown)
+                except Exception:
+                    db_breakdown = {}
+            if isinstance(db_breakdown, dict):
+                skill_gaps = db_breakdown.get("weaknesses", [])
 
     roadmap = await generate_roadmap(
         performance_data=performance_data,

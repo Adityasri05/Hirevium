@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import json
 from app.database import get_db
 from app.models.user import User
 from app.models.evaluation import Evaluation
@@ -31,13 +32,29 @@ async def copilot_chat(
     resume = resume_result.scalar_one_or_none()
 
     latest_breakdown = recent_evals[0].detailed_breakdown if (recent_evals and recent_evals[0].detailed_breakdown) else {}
+    if isinstance(latest_breakdown, str):
+        try:
+            latest_breakdown = json.loads(latest_breakdown)
+        except Exception:
+            latest_breakdown = {}
+
+    skills = []
+    if resume and resume.skills:
+        skills_val = resume.skills
+        if isinstance(skills_val, str):
+            try:
+                skills = json.loads(skills_val)
+            except Exception:
+                skills = []
+        elif isinstance(skills_val, list):
+            skills = skills_val
 
     context = {
         "name": user.name,
         "target_role": user.target_role,
         "career_goals": user.career_goals,
         "hireiq_score": recent_evals[0].hireiq_score if recent_evals else None,
-        "skills": resume.skills if resume else [],
+        "skills": skills,
         "recent_scores": [
             {
                 "hireiq": e.hireiq_score,
