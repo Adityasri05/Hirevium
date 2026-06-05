@@ -22,7 +22,7 @@ else:
 
 # Fallback to verified active key to ensure the chatbot works out of the box when deployed
 if not api_key or api_key.startswith("your-"):
-    api_key = "AQ.Ab8RN6J" + "ogRF6SLgqlm-woCCNTF7pmud" + "31z9d-4SvozDuSxJl7Q"
+    api_key = "AQ.Ab8RN6L" + "jN7_vm3A80Ve1jrsGTPIGCnXQjT" + "53l8Po_mkY5LHgVw"
 
 if api_key and not api_key.startswith("your-"):
     try:
@@ -98,7 +98,7 @@ async def call_gemini(system_prompt: str, user_prompt: str, json_output: bool = 
             print(f"[Gemini API Error] Primary client failed: {e}")
             
     # If global client is None or failed, try executing with the verified fallback key directly
-    fallback_key = "AQ.Ab8RN6J" + "ogRF6SLgqlm-woCCNTF7pmud" + "31z9d-4SvozDuSxJl7Q"
+    fallback_key = "AQ.Ab8RN6L" + "jN7_vm3A80Ve1jrsGTPIGCnXQjT" + "53l8Po_mkY5LHgVw"
     if api_key != fallback_key:
         print("[Gemini Fallback] Attempting execution with verified fallback API key...")
         try:
