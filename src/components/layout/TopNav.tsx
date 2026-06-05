@@ -1,10 +1,8 @@
 "use client";
 
-import { Bell, Search, User, Check, Trash2, FileText, Trophy, GraduationCap, ChevronDown, LogOut } from "lucide-react";
+import { Bell, Search, User, Check, Trash2, FileText, Trophy, GraduationCap, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
-import { auth } from "@/utils/firebase";
-import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -140,17 +138,6 @@ export function TopNav() {
     setNotifications([]);
   };
 
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (e) {
-      console.warn("Sign out: Firebase sign out failed", e);
-    }
-    localStorage.removeItem("hireiq_token");
-    localStorage.removeItem("hireiq_user");
-    window.location.href = "/";
-  };
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -317,17 +304,6 @@ export function TopNav() {
                   <GraduationCap className="w-4 h-4 text-gray-400" />
                   <span>Career Coaching</span>
                 </Link>
-              </div>
-
-              {/* Sign Out Section */}
-              <div className="p-2 border-t border-[rgba(255,255,255,0.08)] bg-[#0F0F13]">
-                <button 
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2.5 w-full px-3 py-2 text-xs text-gray-300 hover:text-white rounded-lg hover:bg-[rgba(255,255,255,0.05)] transition-colors text-left font-medium"
-                >
-                  <LogOut className="w-4 h-4 text-gray-400" />
-                  <span>Sign Out</span>
-                </button>
               </div>
             </div>
           )}

@@ -31,7 +31,7 @@ if api_key and not api_key.startswith("your-"):
         print(f"[Gemini Client Init Error] {e}")
         client = None
 
-MODEL_ID = "gemini-2.5-flash"
+MODEL_ID = "gemini-2.5-flash-lite"
 
 
 async def call_gemini(system_prompt: str, user_prompt: str, json_output: bool = True) -> dict | str:

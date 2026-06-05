@@ -17,8 +17,7 @@ import {
   Globe,
   PieChart,
   UserCheck,
-  Cpu,
-  LogOut
+  Cpu
 } from "lucide-react";
 import {
   Radar,
@@ -60,19 +59,6 @@ export default function Dashboard() {
   
   // Dashboard Analytics states
   const [dashboardData, setDashboardData] = useState<any>(null);
-
-  const handleSignOut = async () => {
-    try {
-      const { signOut } = await import("firebase/auth");
-      const { auth } = await import("@/utils/firebase");
-      await signOut(auth);
-    } catch (e) {
-      console.warn("Sign out: Firebase sign out failed", e);
-    }
-    localStorage.removeItem("hireiq_token");
-    localStorage.removeItem("hireiq_user");
-    window.location.href = "/";
-  };
 
   
   const [skillsRadar, setSkillsRadar] = useState<SkillMetric[]>([
@@ -241,13 +227,7 @@ export default function Dashboard() {
             <Target className="w-4 h-4 animate-pulse" />
             <span>New Interview Mock</span>
           </button>
-          <button 
-            onClick={handleSignOut}
-            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 text-red-400 hover:text-red-300 rounded-lg text-sm transition-all cursor-pointer flex items-center space-x-2 font-medium"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
+
         </div>
       </div>
 
