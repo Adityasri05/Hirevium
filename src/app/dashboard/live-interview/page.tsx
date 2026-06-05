@@ -5,7 +5,9 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mic, 
+  MicOff,
   Video, 
+  VideoOff,
   Monitor, 
   Brain, 
   MessageSquare, 
@@ -59,6 +61,18 @@ export default function LiveInterview() {
   const [evaluationReport, setEvaluationReport] = useState<any>(null);
   const [showCompleted, setShowCompleted] = useState(false);
   const [reportTab, setReportTab] = useState<"verdict" | "predictions">("verdict");
+
+  // Media states and refs
+  const [micEnabled, setMicEnabled] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [screenShareEnabled, setScreenShareEnabled] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const screenVideoRef = useRef<HTMLVideoElement | null>(null);
+  
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
   
   // Real-time evaluation metrics
   const [metrics, setMetrics] = useState({
@@ -110,6 +124,125 @@ export default function LiveInterview() {
     const sec = seconds % 60;
     return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
+
+  // Toggle microphone stream
+  const toggleMic = async () => {
+    if (micEnabled) {
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach(track => track.stop());
+        micStreamRef.current = null;
+      }
+      setMicEnabled(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        micStreamRef.current = stream;
+        setMicEnabled(true);
+      } catch (err) {
+        console.error("Error accessing microphone:", err);
+        alert("Could not access microphone. Please check your browser permissions.");
+      }
+    }
+  };
+
+  // Toggle camera stream
+  const toggleCamera = async () => {
+    if (cameraEnabled) {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(track => track.stop());
+        cameraStreamRef.current = null;
+      }
+      setCameraEnabled(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        cameraStreamRef.current = stream;
+        setCameraEnabled(true);
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        alert("Could not access camera. Please check your browser permissions.");
+      }
+    }
+  };
+
+  // Stop screen sharing helper
+  const stopScreenShare = () => {
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => track.stop());
+      screenStreamRef.current = null;
+    }
+    setScreenShareEnabled(false);
+  };
+
+  // Toggle screen sharing
+  const toggleScreenShare = async () => {
+    if (screenShareEnabled) {
+      stopScreenShare();
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = stream;
+        setScreenShareEnabled(true);
+        
+        // Handle stop sharing clicked from the browser's native bar
+        stream.getVideoTracks()[0].onended = () => {
+          stopScreenShare();
+        };
+      } catch (err) {
+        console.error("Error starting screen share:", err);
+      }
+    }
+  };
+
+  // Stop all media streams helper
+  const stopAllStreams = () => {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach(track => track.stop());
+      cameraStreamRef.current = null;
+    }
+    setCameraEnabled(false);
+
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach(track => track.stop());
+      micStreamRef.current = null;
+    }
+    setMicEnabled(false);
+
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => track.stop());
+      screenStreamRef.current = null;
+    }
+    setScreenShareEnabled(false);
+  };
+
+  // Attach camera stream to video element when enabled
+  useEffect(() => {
+    if (cameraEnabled && cameraStreamRef.current && videoRef.current) {
+      videoRef.current.srcObject = cameraStreamRef.current;
+    }
+  }, [cameraEnabled]);
+
+  // Attach screen stream to video element when enabled
+  useEffect(() => {
+    if (screenShareEnabled && screenStreamRef.current && screenVideoRef.current) {
+      screenVideoRef.current.srcObject = screenStreamRef.current;
+    }
+  }, [screenShareEnabled]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const handleStartInterview = async () => {
     setInterviewStatus("starting");
@@ -198,6 +331,7 @@ export default function LiveInterview() {
         setInterviewStatus("terminated");
         setTerminationReason(data.termination_reason || "Fundamental skill gap identified.");
         setShowTermination(true);
+        stopAllStreams();
         return;
       }
 
@@ -205,6 +339,7 @@ export default function LiveInterview() {
         setInterviewStatus("completed");
         await fetchEvaluationReport(interviewId);
         setShowCompleted(true);
+        stopAllStreams();
         return;
       }
 
@@ -230,6 +365,7 @@ export default function LiveInterview() {
       setInterviewStatus("completed");
       await fetchEvaluationReport(interviewId);
       setShowCompleted(true);
+      stopAllStreams();
     } catch (e) {
       console.error(e);
     }
@@ -269,13 +405,39 @@ export default function LiveInterview() {
                 <span>End Session</span>
               </button>
               
-              <button className="p-2 bg-[rgba(255,255,255,0.05)] rounded-lg text-gray-400 hover:text-white transition-colors">
-                <Mic className="w-5 h-5" />
+              <button 
+                onClick={toggleMic}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  micEnabled 
+                    ? "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/30" 
+                    : "bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white border border-transparent"
+                }`}
+                title={micEnabled ? "Mute Microphone" : "Unmute Microphone"}
+              >
+                {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5 text-red-500" />}
               </button>
-              <button className="p-2 bg-[rgba(255,255,255,0.05)] rounded-lg text-gray-400 hover:text-white transition-colors">
-                <Video className="w-5 h-5" />
+              
+              <button 
+                onClick={toggleCamera}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  cameraEnabled 
+                    ? "bg-[#7C3AED]/10 text-[#7C3AED] border border-[#7C3AED]/30 shadow-[0_0_10px_rgba(124,58,237,0.2)]" 
+                    : "bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white border border-transparent"
+                }`}
+                title={cameraEnabled ? "Turn Off Camera" : "Turn On Camera"}
+              >
+                {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5 text-red-500" />}
               </button>
-              <button className="p-2 bg-[rgba(255,255,255,0.05)] rounded-lg text-gray-400 hover:text-white transition-colors">
+              
+              <button 
+                onClick={toggleScreenShare}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  screenShareEnabled 
+                    ? "bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]" 
+                    : "bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white border border-transparent"
+                }`}
+                title={screenShareEnabled ? "Stop Sharing Screen" : "Share Screen"}
+              >
                 <Monitor className="w-5 h-5" />
               </button>
             </>
@@ -361,22 +523,38 @@ export default function LiveInterview() {
                 <span className="text-xs text-white">HireIQ Adaptive Engine</span>
               </div>
 
-              {/* Simulated Avatar / Waveform */}
-              <div className="relative flex items-center justify-center h-32 w-full">
-                <div className={`absolute w-24 h-24 ${currentTheme.bg} rounded-full blur-[60px] opacity-30`}></div>
-                <div className="flex items-center space-x-2 z-10">
-                  {waves.map((scale, i) => (
-                    <motion.div
-                      key={i}
-                      className={`w-3 bg-gradient-to-t ${currentTheme.primary} rounded-full`}
-                      animate={{ height: scale * 60 + 20 }}
-                      transition={{ type: "spring", bounce: 0, duration: 0.15 }}
-                    />
-                  ))}
+              {/* Simulated Avatar / Waveform OR Screen Share */}
+              {screenShareEnabled ? (
+                <div className="w-full max-w-xl h-48 sm:h-64 flex items-center justify-center relative bg-black/40 rounded-lg overflow-hidden border border-white/5 z-10 shadow-inner">
+                  <video 
+                    ref={screenVideoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-[10px] sm:text-xs text-white flex items-center space-x-1.5 border border-white/5 backdrop-blur-md">
+                    <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse"></span>
+                    <span>Screen Share Active</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-6 text-center max-w-lg">
+              ) : (
+                <div className="relative flex items-center justify-center h-32 w-full">
+                  <div className={`absolute w-24 h-24 ${currentTheme.bg} rounded-full blur-[60px] opacity-30`}></div>
+                  <div className="flex items-center space-x-2 z-10">
+                    {waves.map((scale, i) => (
+                      <motion.div
+                        key={i}
+                        className={`w-3 bg-gradient-to-t ${currentTheme.primary} rounded-full`}
+                        animate={{ height: scale * 60 + 20 }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.15 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+ 
+              <div className="mt-6 text-center max-w-lg z-10">
                 {interviewStatus === "submitting" ? (
                   <div className="flex flex-col items-center space-y-3">
                     <Loader2 className={`w-8 h-8 ${currentTheme.text} animate-spin`} />
@@ -388,6 +566,23 @@ export default function LiveInterview() {
                   </p>
                 )}
               </div>
+
+              {/* Floating Camera Preview */}
+              {cameraEnabled && (
+                <div className="absolute right-4 bottom-4 w-32 h-24 sm:w-40 sm:h-28 rounded-lg overflow-hidden border border-white/10 bg-[#09090B] z-20 shadow-xl">
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-1.5 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] text-white flex items-center space-x-1 border border-white/5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse"></span>
+                    <span>You</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Candidate View / Code Editor */}
