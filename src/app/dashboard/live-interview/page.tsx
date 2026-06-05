@@ -236,7 +236,7 @@ export default function LiveInterview() {
   };
 
   return (
-    <div className="h-[calc(100vh-120px)] flex flex-col space-y-4 relative">
+    <div className="min-h-[calc(100vh-120px)] lg:h-[calc(100vh-120px)] flex flex-col space-y-4 relative">
       {/* Top Control Bar */}
       <div className="flex items-center justify-between bg-[#111827] border border-[rgba(255,255,255,0.05)] p-4 rounded-xl">
         <div className="flex items-center space-x-4">
@@ -299,7 +299,7 @@ export default function LiveInterview() {
 
           <div className="w-full max-w-xl px-4 space-y-3">
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest text-center">Select Target Company Simulation</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
                 { name: "Standard", color: "hover:border-gray-500", border: "border-[rgba(255,255,255,0.05)]", text: "text-gray-400" },
                 { name: "Google", color: "hover:border-[#4285F4]", border: "border-[#4285F4]/30", text: "text-[#4285F4]" },
@@ -350,12 +350,12 @@ export default function LiveInterview() {
           </button>
         </div>
       ) : (
-        <div className="flex-1 flex gap-4 overflow-hidden relative">
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden relative">
           {/* Main Interview Area */}
           <div className="flex-1 flex flex-col gap-4 overflow-hidden">
             
             {/* AI Interviewer Component */}
-            <div className="flex-1 glass rounded-xl border border-[rgba(255,255,255,0.05)] relative overflow-hidden flex flex-col items-center justify-center bg-[rgba(17,24,39,0.8)] p-6">
+            <div className="min-h-[250px] lg:flex-1 glass rounded-xl border border-[rgba(255,255,255,0.05)] relative overflow-hidden flex flex-col items-center justify-center bg-[rgba(17,24,39,0.8)] p-6">
               <div className="absolute top-4 left-4 bg-[rgba(0,0,0,0.5)] px-3 py-1 rounded-full border border-[rgba(255,255,255,0.1)] flex items-center space-x-2">
                 <Brain className={`w-4 h-4 ${currentTheme.text}`} />
                 <span className="text-xs text-white">HireIQ Adaptive Engine</span>
@@ -391,7 +391,7 @@ export default function LiveInterview() {
             </div>
 
             {/* Candidate View / Code Editor */}
-            <div className="h-[45%] glass rounded-xl border border-[rgba(255,255,255,0.05)] p-4 flex flex-col bg-[#09090B]">
+            <div className="min-h-[250px] lg:h-[45%] glass rounded-xl border border-[rgba(255,255,255,0.05)] p-4 flex flex-col bg-[#09090B]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Solution Editor / Technical Answer</span>
                 <span className="text-xs text-[#22C55E] flex items-center space-x-1">
@@ -421,7 +421,7 @@ export default function LiveInterview() {
           </div>
 
           {/* Right Sidebar: Real-Time Metrics & Knowledge Graph */}
-          <div className="w-80 flex flex-col gap-4 overflow-y-auto pr-2 flex-shrink-0">
+          <div className="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto lg:pr-2 flex-shrink-0">
             
             {/* Adaptive Tracker */}
             <div className="glass rounded-xl p-4 border border-[rgba(255,255,255,0.05)]">

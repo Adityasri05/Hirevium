@@ -1,10 +1,23 @@
 "use client";
 
-import { Bell, Search, User, Check, Trash2, FileText, Trophy, GraduationCap, ChevronDown } from "lucide-react";
+import { Bell, Search, User, Check, Trash2, FileText, Trophy, GraduationCap, ChevronDown, Menu, X, LayoutDashboard, Video, Users, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { API_BASE_URL, getAuthHeaders } from "@/utils/api";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { auth } from "@/utils/firebase";
+import { signOut } from "firebase/auth";
+import { motion, AnimatePresence } from "framer-motion";
+
+const NAV_ITEMS = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Live Interview", href: "/dashboard/live-interview", icon: Video },
+  { name: "Resume Intelligence", href: "/dashboard/resumes", icon: FileText },
+  { name: "JD Analyzer", href: "/dashboard/jd-analyzer", icon: Search },
+  { name: "Achievements", href: "/dashboard/achievements", icon: Trophy },
+  { name: "Career Coach", href: "/dashboard/career-coach", icon: GraduationCap },
+  { name: "Recruiter Mode", href: "/dashboard/recruiter", icon: Users },
+];
 
 interface NotificationItem {
   id: string;
@@ -16,12 +29,15 @@ interface NotificationItem {
 
 export function TopNav() {
   const router = useRouter();
+  const pathname = usePathname();
   const [candidateName, setCandidateName] = useState<string>("Alex D.");
   const [candidateEmail, setCandidateEmail] = useState<string>("guest@hireiq.ai");
   const [candidateRole, setCandidateRole] = useState<string>("Frontend Engineer");
   
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [iqScore, setIqScore] = useState<number>(87);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
     if (typeof window !== "undefined") {
@@ -99,6 +115,9 @@ export function TopNav() {
         if (!response.ok) return;
         
         const data = await response.json();
+        if (data.resume_score) {
+          setIqScore(Math.round(data.resume_score));
+        }
         let parsed = data.parsed_content;
         if (parsed) {
           if (typeof parsed === "string") {
@@ -139,12 +158,33 @@ export function TopNav() {
   };
 
 
+  const handleMobileSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn("Sign out: Firebase sign out failed", e);
+    }
+    localStorage.removeItem("hireiq_token");
+    localStorage.removeItem("hireiq_user");
+    window.location.href = "/";
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="h-16 border-b border-[rgba(255,255,255,0.08)] bg-[#09090B]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
-      <div className="flex-1 flex items-center">
-        <div className="relative w-64 md:w-96 hidden sm:block">
+    <>
+      <header className="h-16 border-b border-[rgba(255,255,255,0.08)] bg-[#09090B]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
+        <div className="flex-1 flex items-center">
+          <button
+            id="mobile-menu-btn"
+            onClick={() => setShowMobileMenu(true)}
+            className="p-2 -ml-2 mr-2 text-gray-400 hover:text-white rounded-lg hover:bg-[rgba(255,255,255,0.05)] md:hidden cursor-pointer"
+            aria-label="Open navigation menu"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          
+          <div className="relative w-64 md:w-96 hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input 
             type="text" 
@@ -310,5 +350,87 @@ export function TopNav() {
         </div>
       </div>
     </header>
+
+    {/* Mobile Drawer Navigation */}
+    <AnimatePresence>
+      {showMobileMenu && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowMobileMenu(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] md:hidden"
+          />
+
+          {/* Sidebar Drawer */}
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed top-0 left-0 w-64 h-screen bg-[#09090B] border-r border-[rgba(255,255,255,0.08)] flex flex-col z-[1000] md:hidden"
+          >
+            {/* Header */}
+            <div className="h-16 flex items-center justify-between px-6 border-b border-[rgba(255,255,255,0.08)]">
+              <Link href="/" className="text-2xl font-bold text-gradient-primary tracking-tighter" onClick={() => setShowMobileMenu(false)}>
+                HIREIQ
+              </Link>
+              <button
+                onClick={() => setShowMobileMenu(false)}
+                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Navigation Items */}
+            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setShowMobileMenu(false)}
+                    className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                      isActive 
+                        ? "bg-[rgba(124,58,237,0.15)] text-[#A855F7] border border-[rgba(124,58,237,0.3)]" 
+                        : "text-gray-400 hover:text-white hover:bg-[#111827]"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium text-sm">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-[rgba(255,255,255,0.08)] space-y-3">
+              <div className="glass rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#7C3AED] to-[#A855F7] flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(124,58,237,0.5)]">
+                  <span className="font-bold text-white text-sm">IQ</span>
+                </div>
+                <p className="text-xs text-gray-400">HireIQ Score</p>
+                <p className="text-xl font-bold text-white">{iqScore}<span className="text-sm text-gray-500">/100</span></p>
+              </div>
+              
+              <button 
+                onClick={handleMobileSignOut}
+                className="flex items-center justify-center space-x-2 w-full py-2 bg-[rgba(239,68,68,0.08)] hover:bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.2)] rounded-lg text-xs text-[#EF4444] transition-colors font-medium"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  </>
   );
 }
