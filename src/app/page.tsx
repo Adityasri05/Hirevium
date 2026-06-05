@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
   Upload, 
@@ -14,7 +14,8 @@ import {
   Target,
   PlayCircle,
   Sparkles,
-  LogOut
+  LogOut,
+  X
 } from "lucide-react";
 import AuthDrawer from "@/components/layout/AuthDrawer";
 
@@ -33,6 +34,7 @@ export default function LandingPage() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [isAuthDrawerOpen, setIsAuthDrawerOpen] = useState(false);
   const [authDrawerTab, setAuthDrawerTab] = useState<"signin" | "signup">("signin");
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const checkAuthStatus = () => {
     if (typeof window !== "undefined") {
@@ -188,10 +190,11 @@ export default function LandingPage() {
               </button>
               
               <button 
-                onClick={() => router.push("/onboarding")}
+                onClick={() => setShowVideoModal(true)}
                 className="w-full sm:w-auto px-8 py-4 glass hover:bg-[rgba(255,255,255,0.05)] rounded-xl font-medium transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>Restart Setup / Upload Resume</span>
+                <PlayCircle className="w-5 h-5 text-gray-400" />
+                <span>Video Demo</span>
               </button>
             </div>
 
@@ -267,6 +270,46 @@ export default function LandingPage() {
         initialTab={authDrawerTab}
         onAuthSuccess={checkAuthStatus}
       />
+
+      {/* Video Demo Modal */}
+      <AnimatePresence>
+        {showVideoModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-4xl bg-[#111827] border border-[rgba(255,255,255,0.08)] rounded-2xl shadow-2xl overflow-hidden text-white"
+            >
+              <div className="p-4 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center bg-[#0F0F13]">
+                <div className="flex items-center space-x-2">
+                  <PlayCircle className="w-5 h-5 text-[#A855F7]" />
+                  <span className="font-bold text-sm">HireIQ Platform Video Demo</span>
+                </div>
+                <button 
+                  onClick={() => setShowVideoModal(false)}
+                  className="p-1 rounded-full hover:bg-white/5 text-gray-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="relative aspect-video bg-black w-full">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/3KB8_5-Uqrs?autoplay=1"
+                  title="HireIQ Demo Video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              </div>
+              <div className="p-4 bg-[#0F0F13] flex justify-between items-center text-xs text-gray-400 border-t border-[rgba(255,255,255,0.08)]">
+                <span>ACE YOUR TECHNICAL INTERVIEWS</span>
+                <span>Version 2.0.0</span>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
