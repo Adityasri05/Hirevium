@@ -87,7 +87,9 @@ if os.path.exists(frontend_dir):
     # Serve other static files from 'out' (favicon, etc.)
     @app.get("/favicon.ico")
     async def favicon():
-        fav = os.path.join(frontend_dir, "favicon.ico")
+        fav = os.path.join(frontend_dir, "icon.png")
+        if not os.path.exists(fav):
+            fav = os.path.join(frontend_dir, "favicon.ico")
         if os.path.exists(fav):
             return FileResponse(fav)
         return JSONResponse(status_code=404, content={"detail": "not found"})
