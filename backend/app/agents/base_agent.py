@@ -753,13 +753,101 @@ def _generate_mock_response(system_prompt: str, user_prompt: str) -> dict:
         }
 
     elif "ai copilot" in prompt_lower:
-        return {
-            "response": "To increase your HireIQ score, focus on **Asynchronous Python** and **Database Optimization**! Based on your latest interview, you scored an impressive 83% on Core Python but had minor gaps in handling blocking database queries in async handlers. I suggest checking out the **SQLAlchemy 2.0 Async Guide** in your personalized learning roadmap.",
-            "suggestions": [
-                "Show me how to optimize database connections.",
-                "What are the best resources for React state management?",
-                "Can we practice a Hard difficulty interview?"
+        # Extract user message from user_prompt if possible
+        user_msg = ""
+        msg_match = re.search(r"User Message:\s*(.*)", user_prompt, re.IGNORECASE | re.DOTALL)
+        if msg_match:
+            user_msg = msg_match.group(1).strip()
+            # Remove any trailing instructions text
+            user_msg = re.sub(r"Respond helpfully.*", "", user_msg, flags=re.IGNORECASE | re.DOTALL).strip()
+        
+        fallback_warning = "\n\n*(Note: Running in offline fallback mode due to Gemini API rate limits/quota exhaustion. Showing dynamic offline response.)*"
+        
+        response_text = ""
+        suggestions = [
+            "Show me how to optimize database connections.",
+            "What are the best resources for React state management?",
+            "Can we practice a Hard difficulty interview?"
+        ]
+        
+        msg_lower = user_msg.lower()
+        if any(w in msg_lower for w in ["database", "connection", "db", "sql", "pool"]):
+            response_text = (
+                "### Database Connection Optimization in Python\n\n"
+                "To optimize database connections in a python-based API (FastAPI / SQLAlchemy):\n\n"
+                "1. **Implement Connection Pooling**: Avoid creating a new connection for every request. Configure pooling in your async engine:\n"
+                "   ```python\n"
+                "   engine = create_async_engine(\n"
+                "       DATABASE_URL,\n"
+                "       pool_size=20,       # Base pool size\n"
+                "       max_overflow=10,    # Temporary extra connections\n"
+                "       pool_recycle=3600   # Recycle connections hourly\n"
+                "   )\n"
+                "   ```\n"
+                "2. **Use Asynchronous Drivers**: Use `asyncpg` for PostgreSQL or `aiosqlite` for SQLite. This prevents blocking the single-threaded event loop.\n"
+                "3. **Automatic Cleanup (FastAPI Dependency)**: Always close database connections when a request completes using `yield` in FastAPI:\n"
+                "   ```python\n"
+                "   async def get_db():\n"
+                "       async with SessionLocal() as session:\n"
+                "           yield session\n"
+                "   ```\n"
+                "4. **Batch Fetching**: Use SQLAlchemy's `selectinload` or `joinedload` to avoid N+1 query performance hits when retrieving relationships."
+            )
+            suggestions = [
+                "What is the difference between selectinload and joinedload?",
+                "How do I benchmark database query performance?",
+                "Can you show a full FastAPI database dependency setup?"
             ]
+        elif any(w in msg_lower for w in ["react", "state", "redux", "context", "zustand"]):
+            response_text = (
+                "### Modern React State Management Guide\n\n"
+                "Depending on your app complexity, here are the best practices for React state:\n\n"
+                "1. **Zustand (Recommended)**: A lightweight, hook-based state management library. It is extremely fast, has minimal boilerplate, and prevents unnecessary re-renders:\n"
+                "   ```javascript\n"
+                "   import { create } from 'zustand'\n"
+                "   const useStore = create((set) => ({\n"
+                "     user: null,\n"
+                "     setUser: (user) => set({ user }),\n"
+                "   }))\n"
+                "   ```\n"
+                "2. **React Context API**: Excellent for static or infrequently updated global data (e.g., UI Theme, User Auth Session). *Avoid* using context for high-frequency updates, as it triggers re-renders on all descendants.\n"
+                "3. **Redux Toolkit**: The industry standard for massive applications with complex state workflows, middlewares, and devtools. It is robust but comes with more boilerplate."
+            )
+            suggestions = [
+                "How do I prevent re-renders with React Context?",
+                "What are the benefits of Zustand over Redux?",
+                "Show me how to share state between multiple siblings."
+            ]
+        elif any(w in msg_lower for w in ["difficulty", "hard", "interview", "practice"]):
+            response_text = (
+                "### Interview Difficulty Configurations\n\n"
+                "We can configure your HireIQ interviews to be **Hard** level difficulty. Here is what changes:\n\n"
+                "- **System Design Focus**: Queries will emphasize database sharding, replication lag, CAP theorem, and CDN caching.\n"
+                "- **Deep Technical Concepts**: Python memory management, GIL, async task starvation, and metaclasses.\n"
+                "- **Time Constraints**: Shorter answering windows with adaptive follow-ups analyzing code complexity.\n\n"
+                "Would you like to adjust your current interview settings to Hard difficulty?"
+            )
+            suggestions = [
+                "Adjust interview settings to Hard.",
+                "Give me a sample hard interview question.",
+                "How is my hiring readiness score calculated?"
+            ]
+        elif any(w in msg_lower for w in ["hello", "hi", "hey"]):
+            response_text = (
+                "Hello! I am your HireIQ AI Copilot. I can help you understand your resume analysis, career path options, "
+                "or explain concepts from your mock interviews. What would you like to explore today?"
+            )
+        else:
+            response_text = (
+                f"Regarding your query: *\"{user_msg[:100] + '...' if len(user_msg) > 100 else user_msg}\"*\n\n"
+                "To increase your HireIQ score, focus on **Asynchronous Python** and **Database Optimization**! "
+                "Based on your latest interview, you scored an impressive 83% on Core Python but had minor gaps in handling blocking database queries in async handlers. "
+                "I suggest checking out the **SQLAlchemy 2.0 Async Guide** in your personalized learning roadmap."
+            )
+        
+        return {
+            "response": response_text + fallback_warning,
+            "suggestions": suggestions
         }
 
     elif "difficulty controller" in prompt_lower:
