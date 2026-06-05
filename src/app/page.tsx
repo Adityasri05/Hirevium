@@ -130,12 +130,6 @@ export default function LandingPage() {
               >
                 Sign Up
               </button>
-              <Link 
-                href="/dashboard"
-                className="hidden sm:block px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-border rounded-lg text-sm text-gray-300 hover:text-white font-medium transition-all"
-              >
-                Explore as Guest
-              </Link>
             </>
           )}
         </nav>
@@ -181,7 +175,7 @@ export default function LandingPage() {
                 onClick={() => router.push("/dashboard")}
                 className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white rounded-xl font-medium transition-all shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.5)] flex items-center justify-center space-x-2 group cursor-pointer"
               >
-                <span>Go to Dashboard</span>
+                <span>{isLoggedIn ? "Go to Dashboard" : "Explore as Guest"}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               
