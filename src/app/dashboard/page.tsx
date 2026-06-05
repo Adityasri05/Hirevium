@@ -71,7 +71,7 @@ export default function Dashboard() {
     }
     localStorage.removeItem("hireiq_token");
     localStorage.removeItem("hireiq_user");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   

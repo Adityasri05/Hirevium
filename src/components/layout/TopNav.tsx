@@ -149,7 +149,7 @@ export function TopNav() {
     }
     localStorage.removeItem("hireiq_token");
     localStorage.removeItem("hireiq_user");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
