@@ -180,7 +180,7 @@ export default function LandingPage() {
               </button>
               
               <a 
-                href="https://drive.google.com/file/d/1RSe8G2MIO35S5cvdgyJYIchHwMMtlLNC/view?usp=drivesdk"
+                href="https://youtu.be/SJ4Q15f2BBY?si=hWcdxcIH48DJdyKV"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-8 py-4 glass hover:bg-white/5 rounded-xl font-medium transition-all flex items-center justify-center space-x-2 cursor-pointer"
