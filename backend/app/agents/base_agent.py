@@ -32,6 +32,7 @@ if api_key and not api_key.startswith("your-"):
         client = None
 
 MODEL_ID = "gemini-2.5-flash-lite"
+FALLBACK_MODEL_ID = "gemini-2.5-flash"
 
 
 async def call_gemini(system_prompt: str, user_prompt: str, json_output: bool = True) -> dict | str:
@@ -68,9 +69,9 @@ async def call_gemini(system_prompt: str, user_prompt: str, json_output: bool = 
     if json_output:
         config_params["response_mime_type"] = "application/json"
 
-    def run_call(genai_client):
+    def run_call(genai_client, model_name=MODEL_ID):
         response = genai_client.models.generate_content(
-            model=MODEL_ID,
+            model=model_name,
             contents=[
                 {"role": "user", "parts": [{"text": user_prompt}]},
             ],
@@ -93,17 +94,26 @@ async def call_gemini(system_prompt: str, user_prompt: str, json_output: bool = 
     # Try utilizing the global client first
     if client is not None:
         try:
-            return run_call(client)
+            return run_call(client, MODEL_ID)
         except Exception as e:
-            print(f"[Gemini API Error] Primary client failed: {e}")
+            print(f"[Gemini API Error] Primary client failed with {MODEL_ID}: {e}")
+            try:
+                print(f"[Gemini Fallback] Retrying primary client with {FALLBACK_MODEL_ID}...")
+                return run_call(client, FALLBACK_MODEL_ID)
+            except Exception as e_fallback:
+                print(f"[Gemini API Error] Fallback model also failed: {e_fallback}")
             
     # If global client is None or failed, try executing with the verified fallback key directly
     fallback_key = "AQ.Ab8RN6L" + "jN7_vm3A80Ve1jrsGTPIGCnXQjT" + "53l8Po_mkY5LHgVw"
-    if api_key != fallback_key:
+    if client is None or api_key != fallback_key:
         print("[Gemini Fallback] Attempting execution with verified fallback API key...")
         try:
             fallback_client = genai.Client(api_key=fallback_key)
-            return run_call(fallback_client)
+            try:
+                return run_call(fallback_client, MODEL_ID)
+            except Exception as e_lite:
+                print(f"[Gemini Fallback] Lite model failed on fallback client, trying {FALLBACK_MODEL_ID}...")
+                return run_call(fallback_client, FALLBACK_MODEL_ID)
         except Exception as fallback_err:
             print(f"[Gemini Fallback Error] Fallback client also failed: {fallback_err}")
             
