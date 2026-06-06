@@ -5,7 +5,7 @@
 [![Gemini](https://img.shields.io/badge/Gemini_2.5-AI_Engine-blue?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
 
-> **Grand Winner Hackathon Submission** • A state-of-the-art AI Hiring Intelligence Operating System designed to automate early screening, eliminate resume padding deception through adaptive Q&A, and provide recruiters with multi-persona engineering intelligence. Powered by **Gemini 2.5 Flash Lite** & **FastAPI** & **Next.js 16**.
+> A state-of-the-art AI Hiring Intelligence Operating System designed to automate early screening, eliminate resume padding deception through adaptive Q&A, and provide recruiters with multi-persona engineering intelligence. Powered by **Gemini 2.5 Flash Lite** & **FastAPI** & **Next.js 16**.
 
 🚀 **[Try HIREVIUM Live Demo](https://hirevium-production.up.railway.app)**
 
@@ -241,9 +241,9 @@ Follow these steps to run the complete HIREVIUM system locally:
 
 ---
 
-## 🏆 Hackathon Submission Highlights
+## 🏆 Platform Design Highlights
 
-*   **Resilient Fallbacks:** The platform includes structured mock fallbacks in `base_agent.py`. If a judge tests the application without configuring a Gemini API key or experiences rate limits, all dashboards, radars, and live interview rooms remain fully populated and functional.
+*   **Resilient Fallbacks:** The platform includes structured mock fallbacks in `base_agent.py`. If the application runs without configuring a Gemini API key or experiences rate limits, all dashboards, radars, and live interview rooms remain fully populated and functional.
 *   **Zero-signup Onboarding:** Candidates can experience onboarding, resume uploading, and live technical interviews under guest credentials without forced login flows.
 *   **Direct Bcrypt Hashing:** Built direct Python 3.13 compatible bcrypt hashing to bypass standard passlib library dependencies, ensuring total runtime stability.
 
@@ -261,4 +261,4 @@ Follow these steps to run the complete HIREVIUM system locally:
 
 ---
 
-*Developed for the Gemini Frontier Hackathon. Voted for high engineering complexity and seamless executive decision telemetry.*
+*HIREVIUM features high engineering complexity and seamless executive decision telemetry.*
