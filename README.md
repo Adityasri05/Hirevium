@@ -7,6 +7,8 @@
 
 > **Grand Winner Hackathon Submission** • A state-of-the-art AI Hiring Intelligence Operating System designed to automate early screening, eliminate resume padding deception through adaptive Q&A, and provide recruiters with multi-persona engineering intelligence. Powered by **Gemini 2.5 Flash Lite** & **FastAPI** & **Next.js 16**.
 
+🚀 **[Try HIREVIUM Live Demo](https://hirevium-production.up.railway.app)**
+
 ---
 
 ## 🌟 Pitch & Vision
