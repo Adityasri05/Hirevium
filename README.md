@@ -24,6 +24,16 @@ Traditional technical screening is broken. Engineering managers waste valuable s
 
 ---
 
+
+**Team**
+Aditya Srivastav : Backend & AI / ML
+Akanksha Mishra : Frontend & Database
+Aastha Dubey : Research, UI & UX
+
+
+---
+
+
 ## 🎥 Video Demonstration
 
 Check out our full walkthrough and product pitch:
